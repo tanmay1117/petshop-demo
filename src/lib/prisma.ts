@@ -9,7 +9,12 @@ function createPrismaClient() {
   if (!connectionString) {
     throw new Error('DATABASE_URL environment variable is not set')
   }
-  const pool = new pg.Pool({ connectionString })
+  const pool = new pg.Pool({
+    connectionString,
+    // Neon requires SSL in production
+    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : undefined,
+    max: 5, // limit pool size for serverless
+  })
   const adapter = new PrismaPg(pool)
   return new PrismaClient({ adapter })
 }
